@@ -1,0 +1,57 @@
+# Cloud build on a Mac (Codemagic), so the iOS app can be built and uploaded from Windows.
+# Same pipeline as Cosmo's Space Trip. Steps to set it up are in README.md ("iOS path").
+workflows:
+  ios-testflight:
+    name: iOS build to TestFlight
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    integrations:
+      # The App Store Connect API key you add in Codemagic (Team settings > Integrations).
+      app_store_connect: Codemagic API Key
+    environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.hainguyen.swishstreet
+      vars:
+        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
+        XCODE_SCHEME: "App"
+        APP_VERSION: "0.5.0"
+        # Your app's Apple ID: App Store Connect > your app > App Information > Apple ID.
+        APP_STORE_APPLE_ID: 0000000000
+      node: 20
+      xcode: latest
+      cocoapods: default
+    triggering:
+      events:
+        - tag
+    scripts:
+      - name: Install dependencies
+        script: npm install
+      - name: Copy the game into www/
+        script: npm run build
+      - name: Create and configure the iOS project
+        script: |
+          if [ ! -d ios ]; then npx cap add ios; fi
+          sh scripts/configure-ios.sh
+      - name: App icon and launch screen
+        script: |
+          if [ -f resources/icon-only.png ]; then npx capacitor-assets generate --ios --assetPath resources; else echo "No resources/ yet: using the default icon"; fi
+      - name: Sync web files and plugins
+        script: npx cap sync ios
+      - name: Code signing
+        script: xcode-project use-profiles
+      - name: Version and build number
+        script: |
+          cd ios/App
+          LATEST=$(app-store-connect get-latest-app-store-build-number "$APP_STORE_APPLE_ID" 2>/dev/null || echo 0)
+          agvtool new-marketing-version "$APP_VERSION"
+          agvtool new-version -all $((LATEST + 1))
+      - name: Build the .ipa
+        script: xcode-project build-ipa --workspace "$XCODE_WORKSPACE" --scheme "$XCODE_SCHEME"
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true

@@ -1,0 +1,39 @@
+# Dependencies (installed by npm on the build machine)
+node_modules/
+
+# Build output: npm run build copies the game into www/
+www/
+dist/
+build/
+
+# Native projects are generated fresh by Capacitor / Codemagic on every build
+ios/
+android/
+
+# Logs and scratch files
+*.log
+npm-debug.log*
+*.tmp
+*.bak
+*.swp
+*~
+scratch/
+tmp/
+.cache/
+
+# Editors
+.vscode/
+.idea/
+
+# OS junk
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# Local secrets, never commit (Codemagic keeps the App Store key in its own settings)
+.env
+.env.*
+*.p8
+*.p12
+*.mobileprovision

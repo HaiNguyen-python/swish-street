@@ -1,0 +1,20 @@
+{
+  "appId": "com.hainguyen.swishstreet",
+  "appName": "Swish Street",
+  "webDir": "www",
+  "backgroundColor": "#0b1026",
+  "ios": {
+    "contentInset": "never",
+    "scrollEnabled": false,
+    "backgroundColor": "#0b1026",
+    "preferredContentMode": "mobile"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchAutoHide": true,
+      "launchShowDuration": 1200,
+      "backgroundColor": "#0b1026",
+      "showSpinner": false
+    }
+  }
+}
